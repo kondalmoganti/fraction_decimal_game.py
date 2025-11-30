@@ -24,27 +24,40 @@ body {
 """
 st.markdown(page_bg, unsafe_allow_html=True)
 
-# -------------------------
-# LOAD WORKING LOTTIE FILES
-# -------------------------
+import json
+import random
+from streamlit_lottie import st_lottie
+
+# ----------------------------------------------------
+# Load Lottie animation from local JSON file
+# ----------------------------------------------------
+def load_lottie_file(filepath: str):
+    try:
+        with open(filepath, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        return None
+
+# ----------------------------------------------------
+# List of teacher animation JSON files
+# ----------------------------------------------------
 teacher_list = [
-    "https://lottie.host/cc849f88-378e-48e6-918f-0cd8e3b7d95d/DVbsWpyZUx.json",
-    "https://lottie.host/8ed5a702-9009-4bc5-82bf-2f3c3c9e7eb9/syKjfN8EBV.json",
-    "https://lottie.host/a75ad5d0-ff66-4dc0-97da-6e3b25a232d0/MZ6tUkGJry.json"
+    "teacher1.json",
+    "teacher2.json",
+    "teacher3.json"
 ]
 
-def load_lottie_url(url):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    return r.json()
+# Pick a random teacher animation
+selected_animation = random.choice(teacher_list)
+teacher_animation = load_lottie_file(selected_animation)
 
-teacher_animation = load_lottie_url(random.choice(teacher_list))
-
+# ----------------------------------------------------
+# Display animation safely
+# ----------------------------------------------------
 if teacher_animation:
     st_lottie(teacher_animation, height=250)
 else:
-    st.warning("⚠️ Teacher animation failed to load")
+    st.warning("⚠️ Teacher animation failed to load. Check your JSON file path!")
 
 # -----------------------------------------------------
 # SOUND EFFECTS

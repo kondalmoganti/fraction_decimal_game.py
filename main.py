@@ -29,17 +29,17 @@ import random
 from streamlit_lottie import st_lottie
 
 # ----------------------------------------------------
-# Load Lottie animation from local JSON file
+# Load Lottie animation from LOCAL file
 # ----------------------------------------------------
 def load_lottie_file(filepath: str):
     try:
         with open(filepath, "r") as f:
             return json.load(f)
-    except Exception as e:
+    except Exception:
         return None
 
 # ----------------------------------------------------
-# List of teacher animation JSON files
+# Local teacher animation JSON files
 # ----------------------------------------------------
 teacher_list = [
     "teacher1.json",
@@ -47,17 +47,19 @@ teacher_list = [
     "teacher3.json"
 ]
 
-# Pick a random teacher animation
+# ----------------------------------------------------
+# Choose and load animation
+# ----------------------------------------------------
 selected_animation = random.choice(teacher_list)
 teacher_animation = load_lottie_file(selected_animation)
 
 # ----------------------------------------------------
-# Display animation safely
+# Display animation
 # ----------------------------------------------------
 if teacher_animation:
     st_lottie(teacher_animation, height=250)
 else:
-    st.warning("⚠️ Teacher animation failed to load. Check your JSON file path!")
+    st.warning("⚠️ Teacher animation failed to load. Make sure JSON files exist!")
 
 # -----------------------------------------------------
 # SOUND EFFECTS

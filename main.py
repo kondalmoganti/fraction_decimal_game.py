@@ -24,20 +24,27 @@ body {
 """
 st.markdown(page_bg, unsafe_allow_html=True)
 
-# -----------------------------------------------------
-# LOAD LOTTIE ANIMATIONS
-# -----------------------------------------------------
+# -------------------------
+# LOAD WORKING LOTTIE FILES
+# -------------------------
+teacher_list = [
+    "https://lottie.host/cc849f88-378e-48e6-918f-0cd8e3b7d95d/DVbsWpyZUx.json",
+    "https://lottie.host/8ed5a702-9009-4bc5-82bf-2f3c3c9e7eb9/syKjfN8EBV.json",
+    "https://lottie.host/a75ad5d0-ff66-4dc0-97da-6e3b25a232d0/MZ6tUkGJry.json"
+]
+
 def load_lottie_url(url):
     r = requests.get(url)
     if r.status_code != 200:
         return None
     return r.json()
 
-teacher_list = [
-    "https://assets4.lottiefiles.com/packages/lf20_p9vuwj4g.json",
-    "https://assets2.lottiefiles.com/private_files/lf30_teacher2.json",
-    "https://assets2.lottiefiles.com/private_files/lf30_teacher3.json"
-]
+teacher_animation = load_lottie_url(random.choice(teacher_list))
+
+if teacher_animation:
+    st_lottie(teacher_animation, height=250)
+else:
+    st.warning("⚠️ Teacher animation failed to load")
 
 # -----------------------------------------------------
 # SOUND EFFECTS

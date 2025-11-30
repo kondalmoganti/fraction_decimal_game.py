@@ -1,116 +1,68 @@
 import streamlit as st
 from streamlit_lottie import st_lottie
-import requests, random
+import random
+import json
 from fractions import Fraction
 from PIL import Image
 
-st.set_page_config(page_title="Fraction Game", layout="wide")
-
-# -----------------------------------------------------
-# CUSTOM CSS FOR ANIMATED BACKGROUND
-# -----------------------------------------------------
-page_bg = """
-<style>
-body {
-    background-image: url("https://i.gifer.com/ZZ5H.gif");
-    background-size: cover;
-    animation: fadein 2s;
-}
-@keyframes fadein {
-    from {opacity: 0;} 
-    to {opacity: 1;}
-}
-</style>
-"""
-st.markdown(page_bg, unsafe_allow_html=True)
-
-import json
-import random
-from streamlit_lottie import st_lottie
+st.set_page_config(page_title="Fraction Game", layout="centered")
 
 # ----------------------------------------------------
-# Load Lottie animation from LOCAL file
+# Load local Lottie animation
 # ----------------------------------------------------
 def load_lottie_file(filepath: str):
     try:
         with open(filepath, "r") as f:
             return json.load(f)
-    except Exception:
+    except Exception as e:
+        st.error(f"Error loading {filepath}: {e}")
         return None
 
 # ----------------------------------------------------
-# Local teacher animation JSON files
+# Teacher animations (local JSON files)
 # ----------------------------------------------------
-teacher_list = [
-    "teacher1.json",
-    "teacher2.json",
-    "teacher3.json"
-]
+teacher_files = ["teacher1.json", "teacher2.json", "teacher3.json"]
 
 # ----------------------------------------------------
-# Choose and load animation
+# Student Avatars
 # ----------------------------------------------------
-selected_animation = random.choice(teacher_list)
-teacher_animation = load_lottie_file(selected_animation)
-
-# ----------------------------------------------------
-# Display animation
-# ----------------------------------------------------
-if teacher_animation:
-    st_lottie(teacher_animation, height=250)
-else:
-    st.warning("⚠️ Teacher animation failed to load. Make sure JSON files exist!")
-
-# -----------------------------------------------------
-# SOUND EFFECTS
-# -----------------------------------------------------
-correct_sound = "https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3"
-wrong_sound = "https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"
-
-def play_sound(url):
-    st.markdown(f"""
-    <audio autoplay>
-        <source src="{url}">
-    </audio>
-    """, unsafe_allow_html=True)
-
-# -----------------------------------------------------
-# STUDENT AVATARS
-# -----------------------------------------------------
-student_avatars = {
-    "Boy 1": "https://i.imgur.com/3x4Hf0b.png",
-    "Boy 2": "https://i.imgur.com/aLX1Rr2.png",
-    "Girl 1": "https://i.imgur.com/6a9nM8a.png",
-    "Girl 2": "https://i.imgur.com/YL9fK1R.png"
+avatars = {
+    "Boy Student": "avatar_boy1.png",
+    "Girl Student": "avatar_girl1.png"
 }
 
-st.sidebar.title("🧑‍🎓 Choose Your Avatar")
-avatar_choice = st.sidebar.selectbox("Select:", list(student_avatars.keys()))
-st.sidebar.image(student_avatars[avatar_choice], width=120)
+# Sidebar avatar selection
+st.sidebar.title("🎓 Choose Your Avatar")
+avatar_choice = st.sidebar.selectbox("Select Avatar:", list(avatars.keys()))
+st.sidebar.image(avatars[avatar_choice], width=120)
 
-# -----------------------------------------------------
-# FRACTION/DECIMAL HELPERS
-# -----------------------------------------------------
+# ----------------------------------------------------
+# Helper functions: fraction + decimal
+# ----------------------------------------------------
 def fraction_to_decimal(frac):
     return round(frac.numerator / frac.denominator, 3)
 
 def decimal_to_fraction(dec):
     return Fraction(dec).limit_denominator()
 
-# -----------------------------------------------------
-# QUESTION GENERATOR
-# -----------------------------------------------------
+# ----------------------------------------------------
+# Question generator
+# ----------------------------------------------------
 def generate_question(level):
     if level == 1:
         if random.choice([True, False]):
             dec = random.choice([0.1, 0.2, 0.25, 0.5, 0.75])
             return f"Convert {dec} to Fraction:", decimal_to_fraction(dec)
         else:
-            frac = random.choice([Fraction(1,10), Fraction(3,10), Fraction(1,4), Fraction(1,2), Fraction(3,4)])
+            frac = random.choice([
+                Fraction(1, 10), Fraction(3, 10),
+                Fraction(1, 4), Fraction(1, 2), Fraction(3, 4)
+            ])
             return f"Convert {frac} to Decimal:", fraction_to_decimal(frac)
 
     elif level == 2:
-        fractions_list = [Fraction(2,5), Fraction(3,8), Fraction(4,5), Fraction(7,10), Fraction(11,20)]
+        fractions_list = [Fraction(2, 5), Fraction(3, 8),
+                          Fraction(4, 5), Fraction(7, 10), Fraction(11, 20)]
         frac = random.choice(fractions_list)
         if random.choice([True, False]):
             return f"Convert {frac} to Decimal:", fraction_to_decimal(frac)
@@ -118,16 +70,16 @@ def generate_question(level):
             return f"Convert {fraction_to_decimal(frac)} to Fraction:", frac
 
     elif level == 3:
-        decimals_list = [0.375, 0.625, 0.875, 0.2, 0.4]
+        decimals_list = [0.375, 0.625, 0.875]
         dec = random.choice(decimals_list)
         if random.choice([True, False]):
             return f"Convert {dec} to Fraction:", decimal_to_fraction(dec)
         else:
             return f"Convert {decimal_to_fraction(dec)} to Decimal:", float(dec)
 
-# -----------------------------------------------------
-# SESSION STATE
-# -----------------------------------------------------
+# ----------------------------------------------------
+# Init session state
+# ----------------------------------------------------
 if "score" not in st.session_state:
     st.session_state.score = 0
 if "level" not in st.session_state:
@@ -135,71 +87,75 @@ if "level" not in st.session_state:
 if "question" not in st.session_state:
     st.session_state.question, st.session_state.answer = generate_question(1)
 
-# -----------------------------------------------------
-# UI HEADER
-# -----------------------------------------------------
-
+# ----------------------------------------------------
+# UI Layout
+# ----------------------------------------------------
 st.title("🎮 Fraction ↔ Decimal Conversion Game")
 
 # Random teacher animation
-teacher_animation = load_lottie_url(random.choice(teacher_list))
+selected_teacher = random.choice(teacher_files)
+teacher_animation = load_lottie_file(selected_teacher)
 
-col1, col2 = st.columns([1,2])
+col1, col2 = st.columns([1, 2])
+
 with col1:
-    st_lottie(teacher_animation, height=250)
+    if teacher_animation:
+        st_lottie(teacher_animation, height=240)
+    else:
+        st.error("Teacher animation failed to load.")
 
 with col2:
     st.write(f"### ⭐ Level: {st.session_state.level}")
     st.write(f"### 🧮 Score: {st.session_state.score}")
-    st.write(f"### 👨‍🎓 Player: **{avatar_choice}**")
-    st.image(student_avatars[avatar_choice], width=120)
+    st.image(avatars[avatar_choice], width=120)
 
 st.markdown("---")
+
+# Show Question
 st.write(f"## ❓ {st.session_state.question}")
 
-# -----------------------------------------------------
-# ANSWER BOX
-# -----------------------------------------------------
+# User Answer
 user_answer = st.text_input("Your Answer:")
 
+# ----------------------------------------------------
+# Submit
+# ----------------------------------------------------
 if st.button("Submit"):
     correct = st.session_state.answer
 
     try:
         if isinstance(correct, Fraction):
-            user_fraction = Fraction(user_answer.replace(" ", ""))
-            if user_fraction == correct:
+            if Fraction(user_answer.replace(" ", "")) == correct:
                 st.success("🎉 Correct!")
-                play_sound(correct_sound)
                 st.session_state.score += 1
             else:
                 st.error(f"❌ Wrong! Correct: {correct}")
-                play_sound(wrong_sound)
-        else:
+
+        else:  # decimal
             if abs(float(user_answer) - float(correct)) < 0.01:
                 st.success("🎉 Correct!")
-                play_sound(correct_sound)
                 st.session_state.score += 1
             else:
                 st.error(f"❌ Wrong! Correct: {correct}")
-                play_sound(wrong_sound)
 
     except:
-        st.error("⚠️ Invalid input!")
+        st.error("⚠️ Invalid input format.")
 
-    # Level up rules
+    # Leveling
     if st.session_state.score >= 5 and st.session_state.level == 1:
         st.session_state.level = 2
-        st.success("🌟 LEVEL UP → Level 2")
-    elif st.session_state.score >= 12 and st.session_state.level == 2:
-        st.session_state.level = 3
-        st.success("🔥 LEVEL UP → Level 3 (Hard Mode!)")
+        st.success("⭐ Level Up → Level 2!")
 
-    # Load new question + new teacher animation
+    if st.session_state.score >= 12 and st.session_state.level == 2:
+        st.session_state.level = 3
+        st.success("🔥 Level Up → Level 3!")
+
     st.session_state.question, st.session_state.answer = generate_question(st.session_state.level)
 
-
-if st.button("🔄 Restart Game"):
+# ----------------------------------------------------
+# Restart Game
+# ----------------------------------------------------
+if st.button("🔄 Restart"):
     st.session_state.score = 0
     st.session_state.level = 1
     st.session_state.question, st.session_state.answer = generate_question(1)

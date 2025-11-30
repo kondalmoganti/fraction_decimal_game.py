@@ -2,6 +2,8 @@ import streamlit as st
 import random
 import requests
 from fractions import Fraction
+from streamlit_lottie import st_lottie
+
 
 st.set_page_config(page_title="Fraction <-> Decimal Game", page_icon="🎮", layout="centered")
 
@@ -74,7 +76,7 @@ col1, col2 = st.columns([1,2])
 
 with col1:
     st.write("### 👩‍🏫 Your Teacher")
-    st.lottie(teacher_lottie, height=250)
+    st_lottie(teacher_lottie, height=250)
 
 with col2:
     st.subheader("Answer the math questions to level up!")
